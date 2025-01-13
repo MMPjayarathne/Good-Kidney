@@ -17,18 +17,24 @@ st.markdown("This application will predict the present of Chronic Kidney Disease
 # Input fields for features
 sg, al, sc, dm, htn, appet = st.columns(6)
 
+#the specific gravity options
+sg_options = [1.005, 1.010, 1.015, 1.020, 1.025, 1.030]
+al_options = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+
 with sg:
-    sg = st.number_input("Feature 1", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+    sg = st.selectbox("Specific Gravity", options=sg_options, index=0)
 with al:
-    al = st.number_input("Feature 2", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+    al = st.selectbox("Albumin", options=al_options, index=0)
 with sc:
-    sc = st.number_input("Feature 3", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+    sc = st.number_input("Serum Creatinine", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
 with dm:
-    dm = st.number_input("Feature 3", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+    dm = st.selectbox("Diabetes Mellitus", options=["Yes", "No"], index=0)
 with htn:
-    htn = st.number_input("Feature 3", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
-with sc:
-    appet = st.number_input("Feature 3", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+    htn = st.selectbox("Hypertension", options=["Yes", "No"], index=0)
+with appet:
+    appet = st.selectbox("Appetite", options=["Good", "Poor"], index=0)
+
+
 
 # Prediction button
 if st.button("Predict"):
