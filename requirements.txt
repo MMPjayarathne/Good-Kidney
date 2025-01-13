@@ -1,0 +1,5 @@
+streamlit
+scikit-learn
+numpy
+matplotlib
+tensorflow==2.7
