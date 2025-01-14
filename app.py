@@ -1,7 +1,10 @@
+import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 from model.model_service import load_model_file, predict
 from views.plotting import *
+from explainer.lime_explainer import explain_prediction_lime
+from explainer.shap_explainer import explain_prediction_shap
 
 # Cache the model to avoid reloading it on every interaction
 @st.cache_resource
@@ -62,17 +65,30 @@ with col10:
 # Prediction button
 if st.button("Predict"):
     try:
-        # Prepare input for the model (convert categorical features to numeric)
+        # Convert categorical features to numeric (ensure they're integers)
+        dm = 1 if dm == "Yes" else 0  
+        htn = 1 if htn == "Yes" else 0 
+        appet = 0 if appet == "Good" else 1 
+        
+        # Prepare input for the model (log1p transformation where needed)
         input_features = [
-            al, sc, hemo, pcv, rbcc, 
-            1 if dm == "Yes" else 0,  # Convert 'Yes'/'No' to 1/0
-            su, bgr, 
-            1 if htn == "Yes" else 0,  # Convert 'Yes'/'No' to 1/0
-            0 if appet == "Good" else 1  # Convert 'Good'/'Poor' to 0/1
+            al, 
+            np.log1p(sc),  
+            np.log1p(hemo),  
+            np.log1p(pcv),  
+            np.log1p(rbcc), 
+            dm,  
+            su,  
+            np.log1p(bgr),  
+            htn,  
+            appet 
         ]
 
+        # Prepare input array for the model with 1 sample and 10 features
+        input_data = np.array([input_features])
+        
         # Get prediction probability from the model
-        prediction_prob = predict(model, input_features)
+        prediction_prob = predict(model, input_data)
         
         # Convert probabilities to class predictions (0 or 1)
         prediction_class = (prediction_prob >= 0.5).astype(int)  # Class prediction (0 or 1)
@@ -92,10 +108,18 @@ if st.button("Predict"):
         
         st.sidebar.title("Analysis")
         plotPieChart(prediction,probability_ckd,probability_healthy)
-       
+
+        explanation_lime = explain_prediction_lime(input_data)
+        st.title("Explanation of the model's prediction using LIME")
+        st.text(explanation_lime)
+        
+        explanation_shap = explain_prediction_shap(input_data)
+        st.title("Explanation of the model's prediction using SHAP")
+        st.text(explanation_shap)
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
+        print(e)
 
 # Sidebar for extra information
 st.sidebar.title("About")
