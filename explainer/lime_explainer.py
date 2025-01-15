@@ -4,7 +4,7 @@ import joblib
 from model.model_service import load_model_file
 
 # Load the scaler
-scaler = joblib.load('model/scaler/minmax_scaler.pkl')
+scaler = joblib.load('model/scaler/scaler.pkl')
 
 # Function to explain predictions using LIME
 def explain_prediction_lime(input_data):
@@ -50,16 +50,16 @@ def explain_prediction_lime(input_data):
         
         return prediction_prob
 
-    # Generate explanation for a specific prediction (around class 0 - CKD)
+    # Generate explanation for a specific prediction (around class 1 - CKD)
     explanation = explainer.explain_instance(
         data_row=input_features[0],  # Pass the input instance for which you want to explain (first row of input_features)
         predict_fn=wrapped_predict,  # Pass the wrapped predict function to LIME
         num_features=10,  # Number of features to display in explanation
-        labels=[0]  # Focus explanation on class 0 (CKD)
+        
     )
     
     # Extract explanation as a list of feature importance
-    explanation_list = explanation.as_list(label=0)  # Fetch explanation for class 0 (CKD)
+    explanation_list = explanation.as_list()  # Fetch explanation for class 1 (CKD)
 
     # Convert the explanation list into a more readable format
     explanation_text = "\n".join([f"{feature}: {weight:.3f}" for feature, weight in explanation_list])

@@ -5,6 +5,7 @@ from model.model_service import load_model_file, predict
 from views.plotting import *
 from explainer.lime_explainer import explain_prediction_lime
 from explainer.shap_explainer import explain_prediction_shap
+from bioT.medical_explanation import MedicalExplanationGenerator
 
 # Cache the model to avoid reloading it on every interaction
 @st.cache_resource
@@ -93,11 +94,11 @@ if st.button("Predict"):
         # Convert probabilities to class predictions (0 or 1)
         prediction_class = (prediction_prob >= 0.5).astype(int)  # Class prediction (0 or 1)
         prediction = prediction_class[0][0]
-        probability_ckd = (1 - prediction_prob[0][0]) * 100  # Convert to percentage
-        probability_healthy = prediction_prob[0][0] * 100  # Convert to percentage
+        probability_healthy = (1 - prediction_prob[0][0]) * 100  # Convert to percentage
+        probability_ckd = prediction_prob[0][0] * 100  # Convert to percentage
 
         # Display the prediction with color-coded messages
-        if prediction == 0:  # Prediction is CKD
+        if prediction == 1:  # Prediction is CKD
             st.warning(f"The patient is likely to have Chronic Kidney Disease ")
             st.warning(f"The probability of having Chronic Kidney Disease is: {probability_ckd:.2f}%")
         else:  # Prediction is Healthy
@@ -114,8 +115,68 @@ if st.button("Predict"):
         st.text(explanation_lime)
         
         explanation_shap = explain_prediction_shap(input_data)
-        st.title("Explanation of the model's prediction using SHAP")
-        st.text(explanation_shap)
+        
+        st.title("Explanation of the model's prediction using SHAP & BioBERT")
+        # st.text("SHAP Explanation:\n", explanation_shap["shap_explanation"])
+        # st.text("Medical Guidance:\n", explanation_shap["medical_guidance"])
+        
+        feature_values = {
+        "Albumin": al,
+        "Serum Creatinine": sc,
+        "Hemoglobin": hemo,
+        "Packed Cell Volume": pcv,
+        "Red Blood Cell Count": rbcc,
+        "Diabetes Mellitus": dm,
+        "Sugar": su,
+        "Blood Glucose Random": bgr,
+        "Hypertension": htn,
+        "Appetite": appet
+        }
+       
+        
+        print(f"SHAP values:",explanation_shap)
+        print(f"feature Values: ",feature_values)
+        # Check SHAP values type
+        print("SHAP values types:")
+        for val in explanation_shap:
+            print(f"{val}: {type(val)}")
+        
+        # Check feature values types
+        print("Feature values types:")
+        for feature, value in feature_values.items():
+            print(f"{feature}: {value} ({type(value)})")
+            
+        # Check lengths
+        print(f"Number of feature labels: {len(feature_labels)}")
+        print(f"Number of SHAP values: {len(explanation_shap)}")
+        generator = MedicalExplanationGenerator()
+        
+        # features = list(shap_values.keys())
+        # shap_vals = [shap_values[feature] for feature in features]
+        # aligned_feature_values = {feature: feature_values[feature] for feature in features}
+
+        # # Generate explanations
+        # result = generator.explain_prediction(features, shap_vals, aligned_feature_values)
+        result = generator.explain_prediction(
+        feature_labels,
+        explanation_shap,
+        feature_values
+        )
+        
+        st.sidebar.title("\nSHAP Explanation:")
+        st.sidebar.write(result["shap_explanation"])
+        
+        st.title("\nMedical Insights:")
+        st.write(result["medical_insights"])
+        
+        st.title("\nPrecautions:")
+        for precaution in result["precautions"]:
+            st.write(f"- {precaution}")
+        
+        st.title("\nFeature Units:")
+        for feature, unit in result["feature_units"].items():
+            st.write(f"{feature}: {unit}")
+
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
