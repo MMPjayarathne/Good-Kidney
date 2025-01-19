@@ -6,6 +6,7 @@ from views.plotting import *
 from explainer.lime_explainer import explain_prediction_lime
 from explainer.shap_explainer import explain_prediction_shap
 from bioT.medical_explanation import MedicalExplanationGenerator
+from bioT.medical_explanation_gemini import explain_prediction_with_gemini
 
 # Cache the model to avoid reloading it on every interaction
 @st.cache_resource
@@ -42,9 +43,9 @@ with col3:
 # Second row
 col4, col5, col6 = st.columns(3)
 with col4:
-    pcv = st.number_input("Packed Cell Volume (PCV) (%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+    pcv = st.number_input("Packed Cell Volume (%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
 with col5:
-    rbcc = st.number_input("Red Blood Cell Count (RBCC) (mill/cmm)", min_value=0.0, max_value=10.0, value=0.0, step=0.1)
+    rbcc = st.number_input("Red Blood Cell Count (mill/cmm)", min_value=0.0, max_value=10.0, value=0.0, step=0.1)
 with col6:
     dm = st.selectbox("Diabetes Mellitus", options=["Yes", "No"], index=0)
 
@@ -53,7 +54,7 @@ col7, col8, col9 = st.columns(3)
 with col7:
     su = st.selectbox("Sugar", options=su_options, index=0)
 with col8:
-    bgr = st.number_input("Blood Glucose Random (mg/dl)", min_value=0.0, max_value=200.0, value=0.0, step=0.1)
+    bgr = st.number_input("Blood Glucose Random (mg/dl)", min_value=0.0, max_value=400.0, value=0.0, step=0.1)
 with col9:
     htn = st.selectbox("Hypertension", options=["Yes", "No"], index=0)
 
@@ -92,16 +93,15 @@ if st.button("Predict"):
         prediction_prob = predict(model, input_data)
         
         # Convert probabilities to class predictions (0 or 1)
-        prediction_class = (prediction_prob >= 0.5).astype(int)  # Class prediction (0 or 1)
+        prediction_class = (prediction_prob >= 0.5).astype(int) 
         prediction = prediction_class[0][0]
-        probability_healthy = (1 - prediction_prob[0][0]) * 100  # Convert to percentage
-        probability_ckd = prediction_prob[0][0] * 100  # Convert to percentage
+        probability_healthy = (1 - prediction_prob[0][0]) * 100 
+        probability_ckd = prediction_prob[0][0] * 100 
 
-        # Display the prediction with color-coded messages
-        if prediction == 1:  # Prediction is CKD
-            st.warning(f"The patient is likely to have Chronic Kidney Disease ")
+        if prediction == 1:
+            st.warning(f"⚠️The patient is likely to have Chronic Kidney Disease ")
             st.warning(f"The probability of having Chronic Kidney Disease is: {probability_ckd:.2f}%")
-        else:  # Prediction is Healthy
+        else:
             st.success(f"The patient is Healthy")
             st.success(f"The probability of being Healthy is: {probability_healthy:.2f}%")
         
@@ -111,12 +111,12 @@ if st.button("Predict"):
         plotPieChart(prediction,probability_ckd,probability_healthy)
 
         explanation_lime = explain_prediction_lime(input_data)
-        st.title("Explanation of the model's prediction using LIME")
-        st.text(explanation_lime)
+        st.sidebar.title("LIME Explanation")
+        st.sidebar.text(explanation_lime)
         
         explanation_shap = explain_prediction_shap(input_data)
         
-        st.title("Explanation of the model's prediction using SHAP & BioBERT")
+        st.title("Explanation of the model's prediction using SHAP & Gemini")
         # st.text("SHAP Explanation:\n", explanation_shap["shap_explanation"])
         # st.text("Medical Guidance:\n", explanation_shap["medical_guidance"])
         
@@ -134,22 +134,22 @@ if st.button("Predict"):
         }
        
         
-        print(f"SHAP values:",explanation_shap)
-        print(f"feature Values: ",feature_values)
-        # Check SHAP values type
-        print("SHAP values types:")
-        for val in explanation_shap:
-            print(f"{val}: {type(val)}")
+        # print(f"SHAP values:",explanation_shap)
+        # print(f"feature Values: ",feature_values)
+        # # Check SHAP values type
+        # print("SHAP values types:")
+        # for val in explanation_shap:
+        #     print(f"{val}: {type(val)}")
         
-        # Check feature values types
-        print("Feature values types:")
-        for feature, value in feature_values.items():
-            print(f"{feature}: {value} ({type(value)})")
+        # # Check feature values types
+        # print("Feature values types:")
+        # for feature, value in feature_values.items():
+        #     print(f"{feature}: {value} ({type(value)})")
             
-        # Check lengths
-        print(f"Number of feature labels: {len(feature_labels)}")
-        print(f"Number of SHAP values: {len(explanation_shap)}")
-        generator = MedicalExplanationGenerator()
+        # # Check lengths
+        # print(f"Number of feature labels: {len(feature_labels)}")
+        # print(f"Number of SHAP values: {len(explanation_shap)}")
+        # generator = MedicalExplanationGenerator()
         
         # features = list(shap_values.keys())
         # shap_vals = [shap_values[feature] for feature in features]
@@ -157,25 +157,28 @@ if st.button("Predict"):
 
         # # Generate explanations
         # result = generator.explain_prediction(features, shap_vals, aligned_feature_values)
-        result = generator.explain_prediction(
-        feature_labels,
-        explanation_shap,
-        feature_values
-        )
+        # result = generator.explain_prediction(
+        # feature_labels,
+        # explanation_shap,
+        # feature_values
+        # )
+    
+        
+        result = explain_prediction_with_gemini(feature_labels,explanation_shap,feature_values,prediction)
         
         st.sidebar.title("\nSHAP Explanation:")
         st.sidebar.write(result["shap_explanation"])
         
         st.title("\nMedical Insights:")
-        st.write(result["medical_insights"])
+        st.write(result["medical_guidance"])
         
-        st.title("\nPrecautions:")
-        for precaution in result["precautions"]:
-            st.write(f"- {precaution}")
+        # st.title("\nPrecautions:")
+        # for precaution in result["precautions"]:
+        #     st.write(f"- {precaution}")
         
-        st.title("\nFeature Units:")
-        for feature, unit in result["feature_units"].items():
-            st.write(f"{feature}: {unit}")
+        # st.title("\nFeature Units:")
+        # for feature, unit in result["feature_units"].items():
+        #     st.write(f"{feature}: {unit}")
 
 
     except Exception as e:
