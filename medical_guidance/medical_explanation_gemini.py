@@ -37,7 +37,7 @@ def explain_prediction_with_gemini(feature_labels, shap_values, feature_values, 
 
         # Combine the SHAP explanations
         explanation_text = "\n".join(explanation)
-        print("Generated SHAP explanation:", explanation_text)
+        # print("Generated SHAP explanation:", explanation_text)
 
         # Prepare the input prompt for GPT
         if(type == 1):

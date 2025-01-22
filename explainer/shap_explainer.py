@@ -1,7 +1,6 @@
 import shap
 import numpy as np
 import joblib
-from bioT.medical_guidance import explain_prediction_with_gpt
 from model.model_service import load_model_file
 import pandas as pd
 import streamlit as st
@@ -25,8 +24,8 @@ def explain_prediction_shap(input_data):
 
         # Feature labels for the dataset
         feature_labels = [
-            "Albumin", "Serum Creatinine", "Hemoglobin", "Packed Cell Volume", 
-            "Red Blood Cell Count", "Diabetes Mellitus", "Sugar", "Blood Glucose Random", 
+            "Specific Gravity","Albumin", "Serum Creatinine", "Hemoglobin", "Packed Cell Volume", 
+            "Red Blood Cell Count", "Diabetes Mellitus","Blood Glucose Random", 
             "Hypertension", "Appetite"
         ]
         
