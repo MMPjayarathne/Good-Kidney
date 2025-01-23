@@ -1,5 +1,10 @@
 streamlit
-scikit-learn
 numpy
 matplotlib
+pandas
+scikit-learn
+joblib
 tensorflow==2.7
+shap
+lime
+google-generativeai
