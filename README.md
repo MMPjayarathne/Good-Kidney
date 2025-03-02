@@ -1,4 +1,6 @@
 # GOOD KIDNEY
+![good kidney](https://github.com/user-attachments/assets/3e18d280-d82d-42fa-a264-6248364067cf)
+
 
 ## Overview
 GOOD KIDNEY is a user-friendly application developed as part of my final year research project. The project explores the use of **Explainable Deep Learning** for **Chronic Kidney Disease (CKD) Prediction**, focusing on enhancing transparency and usability in medical decision support systems.
