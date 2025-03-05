@@ -16,6 +16,8 @@ def explain_prediction_with_gemini(feature_labels, shap_values, feature_values, 
     """
     try:
         # Ensure feature_labels and shap_values are aligned
+        print(f"The lenth of feature Labels: ",len(feature_labels))
+        print(f"The lenth of shap values: ",len(shap_values))
         if len(feature_labels) != len(shap_values):
             raise ValueError("The lengths of feature_labels and shap_values do not match.")
 
@@ -82,5 +84,5 @@ def explain_prediction_with_gemini(feature_labels, shap_values, feature_values, 
             }
 
     except Exception as e:
-        print("An error occurred:", e)
+        print("An error occurred in medical explanation:", e)
         raise

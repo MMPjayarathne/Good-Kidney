@@ -10,7 +10,7 @@ scaler = joblib.load('model/scaler/scaler.pkl')
 # Function to explain predictions using LIME
 def explain_prediction_lime(input_data):
     input_features = np.array(input_data).reshape(1, -1)
-    model = load_model_file("model/cnn_model.h5")
+    model = load_model_file("model/mlp_model.h5")
     feature_labels = [
         "Specific Gravity", "Albumin", "Serum Creatinine", "Hemoglobin", 
         "Packed Cell Volume", "Red Blood Cell Count", "Diabetes Mellitus", 

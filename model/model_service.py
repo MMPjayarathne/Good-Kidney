@@ -11,7 +11,7 @@ scaler = joblib.load('model/scaler/scaler.pkl')
 label_encoder = LabelEncoder()
 
 # Function to load the model
-def load_model_file(model_path="model/cnn_model.h5"):
+def load_model_file(model_path="model/mlp_model.h5"):
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}")
     model = load_model(model_path)
@@ -25,8 +25,6 @@ def predict(model, input_data):
     # Apply MinMaxScaler to scale the features as during training
     scaled_input_data = scaler.transform(input_data)  # No transpose here, just pass the data as is
     
-    # Reshape the input data to match the shape used during training (samples, features, 1)
-    reshaped_input_data = scaled_input_data.reshape(scaled_input_data.shape[0], scaled_input_data.shape[1], 1)
-    prediction_prob = model.predict(reshaped_input_data)  # Get the probabilities for class 1
+    prediction_prob = model.predict(scaled_input_data)  # Get the probabilities for class 1
 
     return prediction_prob

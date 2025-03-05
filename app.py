@@ -107,19 +107,22 @@ if st.button("Predict"):
         
         # Get prediction probabilities from the model
         prediction_prob = predict(model, input_data)
+
         # Convert probabilities to class predictions (0 or 1)
-        prediction_class = (prediction_prob >= 0.5).astype(int) 
-        prediction = prediction_class[0][0]
-        probability_healthy = (1 - prediction_prob[0][0]) * 100 
-        probability_ckd = prediction_prob[0][0] * 100 
+        prediction = np.argmax(prediction_prob, axis=1)[0]  # Extract scalar value
+
+        # Extract probabilities correctly
+        probability_ckd = prediction_prob[0][1] * 100  # Probability of CKD (assuming class 1 is CKD)
+        probability_healthy = prediction_prob[0][0] * 100  # Probability of being healthy (assuming class 0 is healthy)
 
         # Display results based on the class prediction
         if prediction == 1:
-            st.warning(f"⚠️The patient is likely to have Chronic Kidney Disease")
+            st.warning("⚠️ The patient is likely to have Chronic Kidney Disease")
             st.warning(f"The probability of having Chronic Kidney Disease is: {probability_ckd:.2f}%")
         else:
-            st.success(f"🥦The patient is Healthy")
+            st.success("🥦 The patient is Healthy")
             st.success(f"The probability of being Healthy is: {probability_healthy:.2f}%")
+
 
         # Pie chart showing overall prediction breakdown
         
